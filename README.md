@@ -1,76 +1,107 @@
-# BlogBoard (Frontend)
-This directory contains the purely static, frontend codebase for **BlogBoard** — a Mega-Dashboard for news and insights. 
-It is designed to be blazing fast, requiring zero build steps or bundlers, while offering a rich, app-like experience using vanilla web technologies.
-## 🚀 Features
-- **Mega-Dashboard Homepage**: Features a real-time breaking news ticker, global search with autocomplete, and live clocks.
-- **Dynamic Content Loading**: Reads and parses `markdown` files on the fly for blog posts and pulls structured metadata from JSON registries (`articles.json`).
-- **Live News Integration**: Interacts dynamically with external news APIs (like GNews) to populate trending and breaking news.
-- **Built-in CMS Admin Panel**: Client-side login overlay (`admin123`) with tabs for AI article queue, API configuration, and mock performance metrics.
-- **Glassmorphism & Theming**: Includes a premium aesthetic with animated ambient backgrounds and native Dark/Light mode toggling that saves to `localStorage`.
-- **Markdown Reader**: The `post.html` page renders articles using `marked.js` and `highlight.js`, complete with a reading progress bar and auto-generated Table of Contents.
-## 🛠 Tech Stack
-- **HTML5**: Semantic layout with deep linking support.
-- **CSS3**: Vanilla CSS using custom properties (CSS variables) for theming. No frameworks (Tailwind, Bootstrap) are used, keeping the project lightweight.
-- **Vanilla JavaScript**: All logic (API fetching, DOM manipulation, routing) is handled via vanilla JS (ES6+).
-- **Libraries (CDN)**:
-  - [marked.js](https://marked.js.org/) for Markdown parsing.
-  - [highlight.js](https://highlightjs.org/) for code syntax highlighting.
-## 📁 Directory Structure
-```text
-web/
-├── admin.html          # Admin Panel (Login, Settings, Queue)
-├── category.html       # Dynamic list of articles filtered by topic
-├── index.html          # Mega-Dashboard homepage
-├── post.html           # Article reader (parses markdown)
-├── favicon.svg         # SVG Favicon
-├── css/
-│   ├── main.css        # Global styles and variables
-│   ├── dashboard.css   # Mega-Dashboard specific layout
-│   ├── category.css    # Category list styles
-│   └── post.css        # Typography and layout for articles
-├── js/
-│   ├── config.js       # App configuration (API URLs)
-│   ├── news-api.js     # External News API integration
-│   ├── blogs-data.js   # Local JSON/Markdown fetching registry
-│   ├── dashboard.js    # Logic for index.html
-│   ├── category.js     # Logic for category.html
-│   ├── post.js         # Logic for post.html
-│   └── admin.js        # Logic for admin.html
-└── blogs/              # Content Database
-    ├── ml/             # Example Category Folder
-    │   ├── articles.json       # Metadata for all ML articles
-    │   └── some-article.md     # The actual post content
-    └── ...             # 30+ other categories
-```
-## 🏁 Getting Started
-Since the platform relies on JS `fetch()` to load local JSON and Markdown files, you **cannot** simply double-click `index.html` (due to browser CORS restrictions on `file://` protocols). You must serve it over HTTP.
-### Option 1: Python HTTP Server (Recommended)
-If you have Python installed, open your terminal in this directory and run:
-```bash
-python -m http.server 8000
-```
-Then visit `http://localhost:8000` in your browser.
-### Option 2: Node.js (npx)
-If you have Node installed, you can use:
-```bash
-npx serve .
-# or
-npx http-server .
-```
-### Option 3: VS Code Live Server
-If you use VS Code, install the "Live Server" extension, right-click `index.html`, and select "Open with Live Server".
-## 📝 Writing New Content
-1. Create a new markdown file (`.md`) inside the relevant category folder under `blogs/` (e.g., `blogs/finance/my-article.md`).
-2. Open that category's `articles.json` (e.g., `blogs/finance/articles.json`) and append a new JSON object:
-```json
-{
-  "id": "blogs/finance/my-article.md",
-  "category": "finance",
-  "title": "My Article Title",
-  "description": "A short summary for the card.",
-  "date": "2026-08-01",
-  "readTime": "5 min",
-  "file": "blogs/finance/my-article.md"
-}
-```
-3. Refresh the site. Your article will appear automatically!
+## About The Project
+
+BlogBoard is an end-to-end, fully automated blogging platform. It autonomously schedules, writes, formats, and publishes deep-dive technical articles on Machine Learning and Artificial Intelligence directly to a fast, static frontend website.
+
+Powered by **LangGraph** for stateful workflow execution and **Groq** for blazing-fast LLM inference, it ensures that high-quality, zero-fluff, production-grade articles are generated and deployed automatically via **GitHub Actions**.
+
+## Library Requirements
+
+ - Python 3.12+
+ - langgraph>=0.2.20
+ - groq>=0.11.0
+ - python-dotenv>=1.0.1
+ - uv (for dependency management)
+
+## Getting Started
+
+This will help you understand how you may give instructions on setting up your project locally.
+To get a local copy up and running follow these simple example steps.
+
+## Installation Steps
+
+### Installation from GitHub
+
+Follow these steps to install and set up the project directly from the GitHub repository:
+
+1. **Clone the Repository**
+   - Open your terminal or command prompt.
+   - Navigate to the directory where you want to install the project.
+   - Run the following command to clone the GitHub repository:
+     ```bash
+     git clone https://github.com/KalyanM45/BlogBoard-AI-Blog-Generator.git
+     ```
+
+2. **Create a Virtual Environment** (Recommended)
+   - It's a good practice to create a virtual environment to manage project dependencies. Run the following command:
+     ```bash
+     uv venv
+     ```
+
+3. **Activate the Virtual Environment**
+   - Activate the virtual environment based on your operating system:
+       ```bash
+       # On Linux/Mac:
+       source .venv/bin/activate
+       # On Windows:
+       .venv\Scripts\activate
+       ```
+
+4. **Install Dependencies**
+   - Navigate to the project directory:
+     ```bash
+     cd BlogBoard-AI-Blog-Generator
+     ```
+   - Run the following command to install project dependencies:
+     ```bash
+     uv pip install -r backend/requirements.txt
+     ```
+
+5. **Run the Project**
+   - Start the backend pipeline by running the appropriate command:
+     ```bash
+     python backend/run.py
+     ```
+
+6. **Access the Project**
+   - Serve the frontend locally using Python's built-in HTTP server:
+     ```bash
+     python -m http.server 8000 --directory frontend
+     ```
+   - Open a web browser and navigate to `http://localhost:8000`.
+
+
+## API Key Setup
+
+To use this project, you need an API key from Groq to power the Large Language Model inference. Follow these steps to obtain and set up your API key:
+
+1. **Get API Key:**
+   - Visit the Groq Console at [console.groq.com](https://console.groq.com/).
+   - Follow the instructions to create an account and obtain your API key.
+
+2. **Set Up API Key:**
+   - Create a file named `.env` in the project root.
+   - Add your API key to the `.env` file:
+     ```dotenv
+     GROQ_API_KEY=your_api_key_here
+     ```
+
+   **Note:** Keep your API key confidential. Do not share it publicly or expose it in your code.<br>
+
+## Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+• **Report bugs**: If you encounter any bugs, please let us know. Open up an issue and let us know the problem.
+
+• **Contribute code**: If you are a developer and want to contribute, follow the instructions below to get started!
+
+1. Fork the Project
+2. Create your Feature Branch
+3. Commit your Changes
+4. Push to the Branch
+5. Open a Pull Request
+
+
+## Acknowledgements
+
+We'd like to extend our gratitude to all individuals and organizations who have played a role in the development and success of this project. Your support, whether through contributions, inspiration, or encouragement, has been invaluable. Thank you for being a part of our journey.
