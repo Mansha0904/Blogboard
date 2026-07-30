@@ -1,4 +1,4 @@
-BlogBoard
+## BlogBoard
 
 
 BlogBoard is an end-to-end, fully automated blogging platform. It autonomously schedules, writes, formats, and publishes deep-dive technical articles on Machine Learning and Artificial Intelligence directly to a fast, static frontend website.
