@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BlogBoard — Preview</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+<style>
+/* ==========================================================================
+   BlogBoard — global stylesheet
+   Design tokens live in :root / [data-theme]. Everything else consumes them.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Fira+Code:wght@400;500&display=swap");
+
+:root,
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg-void: #090b12;
+  --bg-panel: #10131e;
+  --bg-panel-2: #161a28;
+  --bg-panel-3: #1c2133;
+  --border: #232838;
+  --border-soft: #1a1f2e;
+
+  /* Text */
+  --text-primary: #eceef7;
+  --text-secondary: #9198b3;
+  --text-tertiary: #5c6480;
+
+  /* Accents */
+  --accent-primary: #7c5cfc;
+  --accent-primary-soft: rgba(124, 92, 252, 0.14);
+  --accent-secondary: #2dd4bf;
+  --accent-warm: #ff8b5e;
+  --accent-live: #ff5470;
+
+  /* Orbs (ambient background) */
+  --orb-1: #7c5cfc;
+  --orb-2: #2dd4bf;
+  --orb-3: #3a4bff;
+
+  /* Elevation */
+  --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg-void: #f5f5f9;
+  --bg-panel: #ffffff;
+  --bg-panel-2: #fbfbfe;
+  --bg-panel-3: #f0f0f7;
+  --border: #e3e3ee;
+  --border-soft: #ececf4;
+
+  --text-primary: #14151f;
+  --text-secondary: #565971;
+  --text-tertiary: #9093a8;
+
+  --accent-primary: #6941e2;
+  --accent-primary-soft: rgba(105, 65, 226, 0.09);
+  --accent-secondary: #0e9e8e;
+  --accent-warm: #d9622f;
+  --accent-live: #d6294a;
+
+  --orb-1: #b8a3ff;
+  --orb-2: #a0e8de;
+  --orb-3: #aab8ff;
+
+  --shadow-panel: 0 12px 32px rgba(20, 21, 31, 0.08);
+  --shadow-card: 0 2px 14px rgba(20, 21, 31, 0.06);
+
+  color-scheme: light;
+}
+
+/* ---- Reset & base ---- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+button, input { font-family: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: none; }
+:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; border-radius: 4px; }
+::selection { background: var(--accent-primary); color: #fff; }
+
+.serif { font-family: "Playfair Display", serif; }
+.mono { font-family: "Fira Code", monospace; }
+.container { max-width: 1320px; margin: 0 auto; padding: 0 28px; }
+
+/* ==========================================================================
+   Ambient background — glowing orbs + grid overlay (signature element)
+   ========================================================================== */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.5;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.35;
+  will-change: transform;
+}
+[data-theme="light"] .orb { opacity: 0.28; filter: blur(90px); }
+.orb-1 { width: 480px; height: 480px; background: var(--orb-1); top: -120px; left: -80px; animation: drift1 26s ease-in-out infinite alternate; }
+.orb-2 { width: 380px; height: 380px; background: var(--orb-2); top: 20%; right: -100px; animation: drift2 32s ease-in-out infinite alternate; }
+.orb-3 { width: 420px; height: 420px; background: var(--orb-3); bottom: -140px; left: 30%; animation: drift3 29s ease-in-out infinite alternate; }
+
+@keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(60px, 80px) scale(1.15); } }
+@keyframes drift2 { from { transform: translate(0, 0) scale(1); } to { transform: translate(-70px, 40px) scale(0.9); } }
+@keyframes drift3 { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, -60px) scale(1.1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .orb { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ==========================================================================
+   Navbar
+   ========================================================================== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--bg-void) 78%, transparent);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.navbar.is-scrolled { border-bottom-color: var(--border); }
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 68px;
+}
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 19px; letter-spacing: -0.01em; white-space: nowrap; }
+.logo-mark { color: var(--accent-primary); font-size: 20px; transform: translateY(-1px); }
+.logo-board { color: var(--accent-primary); }
+
+.nav-menu { display: flex; align-items: center; gap: 4px; flex: 1; }
+.nav-link {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+.nav-link:hover { color: var(--text-primary); background: var(--bg-panel-2); }
+.nav-link.is-active { color: var(--accent-primary); background: var(--accent-primary-soft); }
+
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+.btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+.btn-primary { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
+.btn-primary:hover { color: #fff; filter: brightness(1.08); }
+
+.nav-toggle { display: none; flex-direction: column; gap: 4px; padding: 6px; }
+.nav-toggle span { width: 20px; height: 2px; background: var(--text-primary); border-radius: 2px; }
+
+/* ==========================================================================
+   Breaking ticker
+   ========================================================================== */
+.ticker {
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  height: 38px;
+}
+.ticker-label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-live);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 14px;
+  height: 100%;
+}
+.ticker-label .pulse { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
+
+.ticker-viewport { overflow: hidden; flex: 1; }
+.ticker-track { display: flex; width: max-content; animation: ticker-scroll 55s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-item { display: flex; align-items: center; gap: 8px; padding: 0 28px; font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; }
+.ticker-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ==========================================================================
+   Top bar (search / clock / theme toggle)
+   ========================================================================== */
+.topbar {
+  border-bottom: 1px solid var(--border-soft);
+  padding: 14px 0;
+}
+.topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.search-wrap { position: relative; flex: 1; max-width: 420px; }
+.search-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: border-color 0.15s ease;
+}
+.search-input-row:focus-within { border-color: var(--accent-primary); }
+.search-input-row svg { flex-shrink: 0; opacity: 0.6; }
+.search-input-row input { flex: 1; background: none; border: none; font-size: 13.5px; color: var(--text-primary); }
+.search-input-row input::placeholder { color: var(--text-tertiary); }
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-panel);
+  max-height: 380px;
+  overflow-y: auto;
+  display: none;
+  z-index: 50;
+  padding: 8px;
+}
+.search-results.is-open { display: block; }
+.search-group-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); padding: 8px 10px 4px; }
+.search-result { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 8px; transition: background 0.12s ease; }
+a.search-result:hover { background: var(--bg-panel-2); }
+.search-result-cat { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.search-result-title { font-size: 13px; color: var(--text-primary); }
+.search-result--live .search-result-title { color: var(--text-secondary); }
+.search-empty { padding: 14px; font-size: 13px; color: var(--text-tertiary); text-align: center; }
+
+.topbar-right { display: flex; align-items: center; gap: 18px; }
+.clock { font-family: "Fira Code", monospace; font-size: 13px; color: var(--text-secondary); letter-spacing: 0.02em; }
+
+.theme-toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 20px;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  position: relative;
+  padding: 2px;
+}
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  transition: transform 0.2s ease;
+}
+.theme-toggle[aria-checked="true"]::after { transform: translateX(20px); }
+
+/* ==========================================================================
+   Hero / page header
+   ========================================================================== */
+.page-hero { padding: 44px 0 8px; }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-primary);
+  margin-bottom: 12px;
+}
+.eyebrow::before { content: ""; width: 16px; height: 1px; background: var(--accent-primary); }
+.page-title { font-family: "Playfair Display", serif; font-weight: 700; font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.01em; max-width: 780px; }
+.page-sub { color: var(--text-secondary); font-size: 15px; margin-top: 10px; max-width: 620px; }
+
+/* ==========================================================================
+   Dashboard layout
+   ========================================================================== */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 36px;
+  padding: 32px 0 80px;
+  align-items: start;
+}
+.feed-section { margin-bottom: 44px; }
+.feed-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+.feed-section-title { font-family: "Playfair Display", serif; font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.feed-section-title .swatch { width: 8px; height: 8px; border-radius: 2px; }
+.feed-section-link { font-size: 12.5px; color: var(--accent-primary); font-weight: 600; }
+
+.feed-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.feed-grid.feed-grid--featured { grid-template-columns: 1.4fr 1fr 1fr; }
+
+.card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--border); }
+.card-media {
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, var(--bg-panel-3), var(--bg-panel-2));
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+}
+.card--featured .card-media { aspect-ratio: 16/10; }
+.card-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 9px;
+  border-radius: 20px;
+  color: #0a0b10;
+}
+.card-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.card-title { font-family: "Playfair Display", serif; font-weight: 600; font-size: 17px; line-height: 1.32; }
+.card--featured .card-title { font-size: 21px; }
+.card-excerpt { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-meta { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-tertiary); margin-top: auto; padding-top: 6px; }
+.card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-tertiary); }
+
+/* ---- Sidebar ---- */
+.sidebar { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 130px; }
+.widget { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: 14px; padding: 20px; }
+.widget-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.widget-title::before { content: ""; width: 3px; height: 14px; background: var(--accent-primary); border-radius: 2px; }
+
+.trending-list { display: flex; flex-direction: column; gap: 4px; }
+.trending-item { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+.trending-item:last-child { border-bottom: none; }
+.trending-rank { font-family: "Fira Code", monospace; font-size: 12px; color: var(--accent-secondary); flex-shrink: 0; width: 16px; }
+.trending-body { flex: 1; }
+.trending-title { font-size: 13px; line-height: 1.4; margin-bottom: 3px; }
+.trending-views { font-size: 11px; color: var(--text-tertiary); }
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-chip {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.tag-chip:hover { transform: translateY(-1px); }
+.tag-chip .swatch { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ==========================================================================
+   Article view (post.html)
+   ========================================================================== */
+.reading-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent-primary); z-index: 200; width: 0%; transition: width 0.1s ease-out; }
+
+.breadcrumbs { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-tertiary); margin-bottom: 18px; flex-wrap: wrap; }
+.breadcrumbs a:hover { color: var(--accent-primary); }
+
+.article-layout { display: grid; grid-template-columns: 1fr 230px; gap: 48px; padding: 8px 0 80px; align-items: start; }
+.article-header { max-width: 760px; }
+.article-title { font-family: "Playfair Display", serif; font-weight: 700; font-size: clamp(30px, 4.2vw, 46px); line-height: 1.15; margin-bottom: 18px; }
+.article-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; }
+.article-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-tertiary); }
+.article-tags { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+
+.article-content { max-width: 720px; font-size: 17px; line-height: 1.8; color: var(--text-primary); }
+.article-content h2 { font-family: "Playfair Display", serif; font-size: 27px; margin: 42px 0 16px; font-weight: 600; scroll-margin-top: 90px; }
+.article-content h3 { font-family: "Playfair Display", serif; font-size: 21px; margin: 32px 0 12px; font-weight: 600; scroll-margin-top: 90px; }
+.article-content p { margin-bottom: 20px; color: var(--text-primary); }
+.article-content p, .article-content li { color: var(--text-primary); opacity: 0.92; }
+.article-content a { color: var(--accent-primary); text-decoration: underline; text-underline-offset: 3px; }
+.article-content ul, .article-content ol { margin: 0 0 20px 22px; }
+.article-content li { margin-bottom: 8px; }
+.article-content blockquote { border-left: 3px solid var(--accent-primary); padding: 4px 0 4px 20px; margin: 24px 0; font-style: italic; color: var(--text-secondary); font-size: 17px; }
+.article-content code { font-family: "Fira Code", monospace; font-size: 0.85em; background: var(--bg-panel-2); padding: 2px 6px; border-radius: 5px; }
+.article-content pre { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; overflow-x: auto; margin: 24px 0; }
+.article-content pre code { background: none; padding: 0; }
+.article-content img { border-radius: 12px; margin: 24px 0; }
+.article-content hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+.toc { position: sticky; top: 130px; }
+.toc-title { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 12px; }
+.toc-list { display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--border); }
+.toc-link { font-size: 13px; color: var(--text-secondary); padding: 6px 0 6px 16px; border-left: 2px solid transparent; margin-left: -1px; transition: color 0.15s ease, border-color 0.15s ease; }
+.toc-link:hover { color: var(--text-primary); }
+.toc-link.is-h3 { padding-left: 28px; font-size: 12.5px; }
+.toc-link.is-active { color: var(--accent-primary); border-left-color: var(--accent-primary); font-weight: 600; }
+
+/* ==========================================================================
+   Category page
+   ========================================================================== */
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 0;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 36px;
+}
+.category-icon { width: 64px; height: 64px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+.category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding-bottom: 80px; }
+
+/* ==========================================================================
+   Admin dashboard
+   ========================================================================== */
+.admin-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: color-mix(in srgb, var(--bg-void) 92%, transparent);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+}
+.admin-login-card {
+  background: var(--bg-panel); border: 1px solid var(--border); border-radius: 18px;
+  padding: 40px; width: 100%; max-width: 360px; box-shadow: var(--shadow-panel);
+  text-align: center;
+}
+.admin-login-card .logo { justify-content: center; margin-bottom: 6px; }
+.admin-login-card p { color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; }
+.field { text-align: left; margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.field input, .field select {
+  width: 100%; padding: 10px 13px; border-radius: 9px; border: 1px solid var(--border);
+  background: var(--bg-panel-2); color: var(--text-primary); font-size: 13.5px;
+}
+.field input:focus, .field select:focus { border-color: var(--accent-primary); }
+.field-error { color: var(--accent-live); font-size: 12px; margin-top: 8px; min-height: 16px; }
+.field-hint { font-size: 11.5px; color: var(--text-tertiary); margin-top: 6px; }
+.btn-block { width: 100%; padding: 11px; }
+
+.admin-shell { display: none; padding: 32px 0 80px; }
+.admin-shell.is-active { display: block; }
+.admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin: 28px 0 28px; }
+.admin-tab {
+  padding: 10px 18px; font-size: 13.5px; font-weight: 600; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; transform: translateY(1px);
+}
+.admin-tab.is-active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+.admin-panel { display: none; }
+.admin-panel.is-active { display: block; animation: fadein 0.2s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 32px; }
+.stat-card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: 14px; padding: 22px; }
+.stat-label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.stat-value { font-family: "Fira Code", monospace; font-size: 30px; font-weight: 500; color: var(--accent-primary); }
+.stat-delta { font-size: 12px; color: var(--accent-secondary); margin-top: 6px; }
+
+.data-table { width: 100%; border-collapse: collapse; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: 14px; overflow: hidden; }
+.data-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); padding: 14px 18px; background: var(--bg-panel-2); border-bottom: 1px solid var(--border); }
+.data-table td { padding: 14px 18px; font-size: 13.5px; border-bottom: 1px solid var(--border-soft); }
+.data-table tr:last-child td { border-bottom: none; }
+.status-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.03em; }
+.status-pill--review { background: rgba(255, 139, 94, 0.15); color: var(--accent-warm); }
+.status-pill--approved { background: rgba(45, 212, 191, 0.15); color: var(--accent-secondary); }
+.status-pill--draft { background: var(--bg-panel-3); color: var(--text-tertiary); }
+
+.settings-form { max-width: 480px; display: flex; flex-direction: column; gap: 4px; }
+.save-confirm { font-size: 12.5px; color: var(--accent-secondary); margin-top: 8px; opacity: 0; transition: opacity 0.2s ease; }
+.save-confirm.is-visible { opacity: 1; }
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer { border-top: 1px solid var(--border-soft); padding: 36px 0; margin-top: 40px; }
+.site-footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-text { font-size: 12.5px; color: var(--text-tertiary); }
+
+/* ==========================================================================
+   Empty / loading states
+   ========================================================================== */
+.skeleton { background: linear-gradient(90deg, var(--bg-panel-2) 25%, var(--bg-panel-3) 50%, var(--bg-panel-2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 14px; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); }
+.empty-state-icon { font-size: 32px; color: var(--accent-primary); margin-bottom: 12px; }
+.empty-state h3 { font-family: "Playfair Display", serif; font-size: 18px; color: var(--text-primary); margin-bottom: 6px; }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .dashboard-layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
+  .sidebar .widget { flex: 1; min-width: 260px; }
+  .article-layout { grid-template-columns: 1fr; }
+  .toc { display: none; }
+  .feed-grid, .feed-grid.feed-grid--featured, .category-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .nav-menu { position: fixed; top: 68px; left: 0; right: 0; bottom: 0; background: var(--bg-void); flex-direction: column; align-items: stretch; padding: 20px; gap: 6px; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 99; overflow-y: auto; }
+  .nav-menu.is-open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+  .nav-link { padding: 12px 14px; font-size: 15px; }
+  .topbar-inner { flex-wrap: wrap; }
+  .search-wrap { order: 3; max-width: none; width: 100%; }
+  .feed-grid, .feed-grid.feed-grid--featured, .category-grid { grid-template-columns: 1fr; }
+  .sidebar { flex-direction: column; }
+  .container { padding: 0 18px; }
+  .btn.btn-login-label { display: none; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="ambient-bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<header class="navbar" data-navbar>
+  <div class="container navbar-inner">
+    <a class="logo" data-route="" href="#">
+      <span class="logo-mark">◈</span>Blog<span class="logo-board">Board</span>
+    </a>
+    <nav class="nav-menu" data-nav-menu>
+      <a class="nav-link is-active" data-nav-link="dashboard" data-route="" href="#">Dashboard</a>
+      <a class="nav-link" data-nav-link="category" data-route="category/ai" href="#">AI</a>
+      <a class="nav-link" data-nav-link="category" data-route="category/ml" href="#">ML</a>
+      <a class="nav-link" data-nav-link="category" data-route="category/finance" href="#">Finance</a>
+      <a class="nav-link" data-nav-link="category" data-route="category/politics" href="#">Politics</a>
+      <a class="nav-link" data-nav-link="category" data-route="category/cybersecurity" href="#">Cybersecurity</a>
+      <a class="nav-link" data-nav-link="category" data-route="category/climate" href="#">Climate</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn" data-nav-link="admin" data-route="admin" href="#"><span class="btn-login-label">Login</span></a>
+      <button class="nav-toggle" data-nav-toggle aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-label"><span class="pulse"></span>Breaking</div>
+  <div class="ticker-viewport">
+    <div class="ticker-track" data-ticker-track><span class="ticker-item">Loading live headlines…</span></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="search-wrap" data-search>
+      <div class="search-input-row">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search articles…" data-search-input aria-label="Search" />
+      </div>
+      <div class="search-results" data-search-results></div>
+    </div>
+    <div class="topbar-right">
+      <span class="clock mono" data-clock>--:--:--</span>
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme" role="switch" aria-checked="true"></button>
+    </div>
+  </div>
+</div>
+
+<div id="view-root"></div>
+
+<footer class="site-footer">
+  <div class="container site-footer-inner">
+    <span class="footer-text">© 2026 BlogBoard. Built for readers who skim less and know more.</span>
+    <span class="footer-text mono">preview build</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+const CATEGORY_REGISTRY = [
+  // --- Tech & Science ---
+  { slug: "ml", label: "Machine Learning", icon: "◉", color: "#7C5CFC", group: "Tech & Science", description: "Models, training runs, and the math underneath them." },
+  { slug: "ai", label: "Artificial Intelligence", icon: "◈", color: "#8B6BFF", group: "Tech & Science", description: "Where the field is heading, and who's steering it." },
+  { slug: "cv", label: "Computer Vision", icon: "◎", color: "#6C47E8", group: "Tech & Science", description: "Teaching machines to see, segment, and recognize." },
+  { slug: "nlp", label: "NLP", icon: "◐", color: "#9B7BFF", group: "Tech & Science", description: "Language models, tokenizers, and text at scale." },
+  { slug: "robotics", label: "Robotics", icon: "◑", color: "#5B3FD9", group: "Tech & Science", description: "Actuators, control loops, and embodied intelligence." },
+  { slug: "cybersecurity", label: "Cybersecurity", icon: "◆", color: "#E8455C", group: "Tech & Science", description: "Threats, breaches, and the defenses that hold." },
+  { slug: "space", label: "Space", icon: "✦", color: "#4C6FFF", group: "Tech & Science", description: "Launches, orbits, and the hardware that gets there." },
+  { slug: "biotech", label: "Biotech", icon: "◒", color: "#2DD4BF", group: "Tech & Science", description: "Genomics, therapeutics, and lab-bench breakthroughs." },
+  { slug: "hardware", label: "Hardware", icon: "▣", color: "#7C5CFC", group: "Tech & Science", description: "Chips, silicon, and the machines underneath the models." },
+  { slug: "quantum", label: "Quantum Computing", icon: "◍", color: "#8B6BFF", group: "Tech & Science", description: "Qubits, coherence, and the race past classical limits." },
+  { slug: "climate", label: "Climate Tech", icon: "◔", color: "#34D399", group: "Tech & Science", description: "Carbon, grids, and the engineering of a cooler planet." },
+  { slug: "opensource", label: "Open Source", icon: "◇", color: "#60A5FA", group: "Tech & Science", description: "Repos, licenses, and the commons that runs the internet." },
+
+  // --- Markets & Finance ---
+  { slug: "finance", label: "Finance", icon: "◈", color: "#E0B341", group: "Markets & Finance", description: "Markets, monetary policy, and where the money moves." },
+  { slug: "markets", label: "Markets", icon: "◉", color: "#D4A72C", group: "Markets & Finance", description: "Equities, indices, and the daily churn of trading floors." },
+  { slug: "crypto", label: "Crypto", icon: "◆", color: "#F0A020", group: "Markets & Finance", description: "Chains, protocols, and digital-asset volatility." },
+  { slug: "startups", label: "Startups", icon: "▲", color: "#EAB84D", group: "Markets & Finance", description: "Funding rounds, cap tables, and the founders behind them." },
+  { slug: "economy", label: "Economy", icon: "◑", color: "#C99A2E", group: "Markets & Finance", description: "Inflation, employment, and the macro picture." },
+  { slug: "realestate", label: "Real Estate", icon: "▦", color: "#B8862F", group: "Markets & Finance", description: "Property markets, rates, and where prices are headed." },
+  { slug: "vc", label: "Venture Capital", icon: "◈", color: "#DDAA33", group: "Markets & Finance", description: "Term sheets, valuations, and who's writing checks." },
+  { slug: "trade", label: "Trade & Tariffs", icon: "⬡", color: "#C2933C", group: "Markets & Finance", description: "Supply chains, tariffs, and cross-border commerce." },
+
+  // --- Politics & World ---
+  { slug: "politics", label: "Politics", icon: "◆", color: "#E8455C", group: "Politics & World", description: "Policy, power, and the institutions that hold both." },
+  { slug: "elections", label: "Elections", icon: "☆", color: "#F0526B", group: "Politics & World", description: "Campaigns, polling, and results as they land." },
+  { slug: "policy", label: "Policy", icon: "▣", color: "#D63A50", group: "Politics & World", description: "Legislation and the regulatory fine print." },
+  { slug: "world", label: "World", icon: "◍", color: "#C7304A", group: "Politics & World", description: "Global affairs, diplomacy, and cross-border news." },
+  { slug: "law", label: "Law & Courts", icon: "⚖", color: "#DE4560", group: "Politics & World", description: "Rulings, cases, and the legal system in motion." },
+  { slug: "defense", label: "Defense", icon: "◭", color: "#B72E44", group: "Politics & World", description: "Military affairs and geopolitical security." },
+
+  // --- Culture & Society ---
+  { slug: "culture", label: "Culture", icon: "◐", color: "#2DD4BF", group: "Culture & Society", description: "Ideas, media, and the shifting cultural current." },
+  { slug: "health", label: "Health", icon: "✚", color: "#34D399", group: "Culture & Society", description: "Medicine, public health, and wellbeing research." },
+  { slug: "education", label: "Education", icon: "◈", color: "#38BDF8", group: "Culture & Society", description: "Schools, universities, and how learning is changing." },
+  { slug: "energy", label: "Energy", icon: "◉", color: "#FBBF24", group: "Culture & Society", description: "Grids, generation, and the transition underway." },
+  { slug: "labor", label: "Labor", icon: "◑", color: "#22D3EE", group: "Culture & Society", description: "Work, wages, and organized labor movements." },
+  { slug: "media", label: "Media", icon: "▤", color: "#5EEAD4", group: "Culture & Society", description: "Publishing, platforms, and the attention economy." }
+];
+
+const ARTICLES_DATA = {"ai": [{"slug": "open-weight-models-close-the-gap", "title": "Open-Weight Models Are Closing the Gap Faster Than Expected", "excerpt": "The distance between the best open release and the best closed frontier model just kept shrinking this year.", "author": "Daniel Cho", "date": "2026-07-29T08:00:00Z", "tags": ["ai", "opensource"], "wordCount": 1240, "category": "ai", "content": "# Open-Weight Models Are Closing the Gap Faster Than Expected\n\nA year ago, the distance between the best open-weight release and the best closed frontier model was measured in generations. That gap has been narrowing all year, and the pace has surprised people on both sides of it.\n\n## Why the gap closed\n\n### Training recipes became common knowledge\n\nTechniques that were novel research contributions two years ago \u2014 better data curation, more efficient scaling laws, refined post-training methods \u2014 are now closer to standard practice, published in enough detail that most serious labs can reproduce them.\n\n### Compute access broadened\n\nCloud providers and national compute initiatives have made large training runs accessible to more organizations than the handful that could afford them previously.\n\n### Community post-training moved fast\n\nOnce a strong open base model ships, the community iterates on fine-tuning and alignment techniques in parallel across dozens of groups \u2014 a form of parallel search that's hard for any single lab to match internally.\n\n## What's still different\n\nFrontier labs still tend to lead on the newest capabilities \u2014 long-horizon agentic tasks, multimodal reasoning, and the largest context windows \u2014 before those capabilities show up in open releases. The gap hasn't disappeared so much as it's become a lag rather than a chasm.\n\n## Why it matters\n\nFor most practical applications, \"good enough and open\" beats \"best and closed,\" especially once you factor in cost, customization, and data control. That's shifting where a lot of production deployment decisions land, even for teams that would have defaulted to a closed frontier API a year ago.\n"}, {"slug": "agents-that-actually-finish-tasks", "title": "Agents That Actually Finish the Task They Started", "excerpt": "Long-horizon reliability, not raw capability, is what's separating demos from deployed systems.", "author": "Priya Raman", "date": "2026-07-25T13:00:00Z", "tags": ["ai"], "wordCount": 1010, "category": "ai", "content": "# Agents That Actually Finish the Task They Started\n\nMost agent demos look impressive for the first ten steps. The interesting engineering happens at step fifty, when small errors have had time to compound.\n\n## Long-horizon reliability is the real metric\n\nA model can be extremely capable at any individual step \u2014 writing code, calling a tool, reading a document \u2014 and still fail a long task, because the failure mode isn't a lack of skill. It's drift: small misunderstandings early in a task that compound as the agent keeps building on its own prior (wrong) assumptions.\n\n## What's actually improving this\n\n- **Better self-verification.** Agents that check their own intermediate outputs against the original goal catch drift before it compounds.\n- **Structured memory.** Keeping an explicit, editable record of what's been tried and what the current plan is, rather than relying purely on conversation history.\n- **Narrower tool interfaces.** Tools with clearer contracts and better error messages give agents more useful signal when something goes wrong.\n\n## The benchmark shift\n\nEvaluation is moving away from single-turn task completion toward multi-hour, multi-step workflows that mirror real work \u2014 closing tickets, shipping small features, researching and writing reports \u2014 because that's where the reliability gap actually shows up.\n\n## What this unlocks\n\nOnce an agent can be trusted to work independently for hours rather than minutes, the economics of delegating real work change substantially. That's the threshold most of the current engineering effort is aimed at crossing.\n"}, {"slug": "the-new-ai-governance-playbook", "title": "The New AI Governance Playbook Taking Shape in 2026", "excerpt": "Regulators, labs, and standards bodies are converging on a rough shape for oversight. Here's what it looks like.", "author": "Elena Marsh", "date": "2026-07-19T10:45:00Z", "tags": ["ai", "policy"], "wordCount": 1320, "category": "ai", "content": "# The New AI Governance Playbook Taking Shape in 2026\n\nFor a few years, AI governance discussions were mostly speculative \u2014 proposals about what oversight *could* look like. That's shifted. A rough, converging shape is now visible across regulators, labs, and standards bodies.\n\n## The three pillars that emerged\n\n### 1. Pre-deployment evaluation\n\nRequirements to test systems for specific risk categories before wide release, often mapped to capability thresholds rather than blanket rules.\n\n### 2. Incident reporting\n\nStructured disclosure requirements when a deployed system causes meaningful harm, modeled loosely on frameworks from aviation and pharmaceuticals.\n\n### 3. Third-party auditing\n\nA slowly maturing ecosystem of independent evaluators, distinct from both the labs building systems and the regulators overseeing them.\n\n## Where labs and regulators still disagree\n\n> Almost everyone agrees evaluation should happen. Almost no one agrees on who should run it, what it should measure, or what happens when a system fails it.\n\nDisagreement mostly clusters around enforcement mechanisms and international coordination \u2014 a system evaluated as safe under one jurisdiction's framework doesn't automatically satisfy another's, and harmonizing that is proving slower than any single piece of the technical work.\n\n## What to watch next\n\nThe next inflection point is likely to be the first major cross-border enforcement case, which will do more to clarify how these frameworks actually operate in practice than any amount of additional policy drafting.\n"}], "climate": [{"slug": "nuclear-quiet-return-climate-strategy", "title": "The Quiet Return of Nuclear as a Climate Strategy", "excerpt": "Small modular reactors are moving from slideware to permits. What's actually different this cycle.", "author": "Sofia Delgado", "date": "2026-07-28T13:45:00Z", "tags": ["climate", "energy"], "wordCount": 1100, "category": "climate", "content": "# The Quiet Return of Nuclear as a Climate Strategy\n\nSmall modular reactors are moving from slideware to permits. What's actually different this cycle, compared to previous nuclear revivals that stalled out.\n\n## What's different this time\n\n### Financing structures have changed\n\nRather than a single utility bearing full construction risk, newer projects spread it across consortiums of industrial buyers seeking dedicated power for energy-intensive operations.\n\n### Regulatory pathways have simplified\n\nStandardized reactor designs are moving through streamlined licensing processes built specifically for modular, factory-built units rather than bespoke large-scale plants.\n\n## The remaining obstacles\n\n- Construction cost overruns remain the industry's biggest credibility problem\n- Waste storage policy is still unresolved in most jurisdictions\n- Public opinion has improved but remains regionally uneven\n\n## Why it's gaining ground anyway\n\nGrid operators facing rising demand from data centers and electrification are increasingly willing to accept nuclear's cost and timeline risk in exchange for firm, always-available power \u2014 a trade-off that looked less attractive when demand growth was flatter.\n"}, {"slug": "coastal-cities-flood-defense-spending", "title": "Coastal Cities Accelerate Flood-Defense Spending", "excerpt": "Ahead of storm season, budget approvals for sea walls and drainage upgrades hit a multi-year high.", "author": "Elena Marsh", "date": "2026-07-20T08:30:00Z", "tags": ["climate"], "wordCount": 870, "category": "climate", "content": "# Coastal Cities Accelerate Flood-Defense Spending\n\nAhead of storm season, budget approvals for sea walls and drainage upgrades hit a multi-year high across coastal municipalities.\n\n## What's being funded\n\n- Elevated and reinforced sea wall segments in the highest-risk districts\n- Upgraded stormwater drainage capacity in older infrastructure\n- Early-warning sensor networks tied directly to evacuation planning\n\n## Why the spending accelerated now\n\nInsurance markets have played an unexpected role: rising premiums and coverage withdrawals in high-risk zones have made the economic case for public infrastructure investment harder for local governments to postpone.\n\n## The financing question\n\n> Federal grants are covering a shrinking share of these projects. Most of the recent increase in spending is coming from municipal bonds, which puts long-term repayment pressure on local budgets already stretched thin.\n\nWhether this pace of investment is sustainable is now as much a budgeting question as an engineering one.\n"}], "cybersecurity": [{"slug": "ransomware-landscape-field-guide", "title": "A Field Guide to the Current Ransomware Landscape", "excerpt": "Who's operating, how they get in, and what the last six months of incident data actually shows.", "author": "Marcus Idowu", "date": "2026-07-29T11:00:00Z", "tags": ["cybersecurity"], "wordCount": 1160, "category": "cybersecurity", "content": "# A Field Guide to the Current Ransomware Landscape\n\nWho's operating, how they get in, and what the last six months of incident data actually shows.\n\n## The access vector that dominates\n\nCompromised credentials, not novel exploits, remain the most common initial access vector by a wide margin. Most groups don't need a zero-day when a purchased credential set works just as well.\n\n## What's changed operationally\n\n- **Double extortion is now standard**, not the exception \u2014 exfiltrate first, encrypt second.\n- **Affiliate models have matured**, with ransomware-as-a-service operators focusing purely on tooling and support.\n- **Negotiation timelines have shortened**, as more organizations adopt pre-agreed response playbooks.\n\n## Defensive priorities that matter most\n\n```\n1. Credential hygiene + MFA everywhere\n2. Segmented backups, tested regularly\n3. Detection tuned for lateral movement, not just initial access\n```\n\n## The honest takeaway\n\nNo single control stops a determined operator. The organizations with the best outcomes are the ones that treat detection and recovery as seriously as prevention, because prevention alone has never been sufficient.\n"}, {"slug": "logistics-network-breach-timeline", "title": "Inside the Regional Logistics Network Breach", "excerpt": "A reconstructed timeline of the intrusion, from initial access to public disclosure.", "author": "James Okafor", "date": "2026-07-23T09:00:00Z", "tags": ["cybersecurity"], "wordCount": 1030, "category": "cybersecurity", "content": "# Inside the Regional Logistics Network Breach\n\nA reconstructed timeline of the intrusion, from initial access to public disclosure.\n\n## Initial access\n\nInvestigators traced the intrusion to a compromised third-party vendor account with excessive network privileges \u2014 a pattern that shows up in a large share of supply-chain-adjacent breaches.\n\n## Escalation and dwell time\n\nThe attackers maintained access for several weeks before deploying their payload, using that window to map internal network segmentation and identify high-value systems.\n\n## Disclosure and response\n\n- Initial detection came from anomalous outbound traffic, not the ransomware trigger itself\n- Public disclosure followed within the legally required reporting window\n- Operations were restored from segmented backups within days, limiting encryption impact\n\n## The lesson for other operators\n\nThe dwell time here is the detail worth internalizing: the breach wasn't caught at the point of entry, but during the reconnaissance phase that followed \u2014 which is where most of the realistic opportunities for detection actually exist.\n"}], "finance": [{"slug": "central-bank-holds-rates-steady", "title": "Central Bank Holds Rates Steady, Signals Cautious Outlook", "excerpt": "Policymakers left the benchmark rate unchanged but softened language around future cuts.", "author": "Sofia Delgado", "date": "2026-07-30T18:00:00Z", "tags": ["finance", "economy", "markets"], "wordCount": 860, "category": "finance", "content": "# Central Bank Holds Rates Steady, Signals Cautious Outlook\n\nPolicymakers left the benchmark rate unchanged at this week's meeting, but softened the language around future cuts in a way markets read as dovish.\n\n## What the statement changed\n\nThe prior statement described policy as needing to remain \"restrictive for some time.\" The updated language drops that phrase entirely, replaced with a more conditional framing tied to incoming inflation data.\n\n## Market reaction\n\n- Short-term yields fell modestly following the announcement\n- Equity markets closed broadly higher, led by rate-sensitive sectors\n- Futures markets shifted to pricing in an earlier first cut than before the meeting\n\n## What to watch next\n\nThe next two inflation prints will likely determine whether this week's tone shift becomes an actual policy shift, or just a temporary softening in language.\n"}, {"slug": "why-vc-checks-got-smaller", "title": "Why VC Checks Got Smaller (and Rounds Got Slower)", "excerpt": "Seed rounds are taking twice as long to close as they did two years ago. The math behind the slowdown.", "author": "Daniel Cho", "date": "2026-07-27T15:20:00Z", "tags": ["finance", "vc", "startups"], "wordCount": 980, "category": "finance", "content": "# Why VC Checks Got Smaller (and Rounds Got Slower)\n\nSeed rounds are taking roughly twice as long to close as they did two years ago, and the checks themselves are smaller. The math behind that slowdown is worth unpacking.\n\n## The capital math\n\nLimited partners are asking for longer holding periods before committing to new funds, which has pushed venture firms toward smaller, more selective bets rather than deploying capital as quickly as in prior cycles.\n\n### Where the money is still moving fast\n\n- Infrastructure and tooling companies with near-term revenue\n- Applied AI companies with defensible data advantages\n- Later-stage rounds for already-proven businesses\n\n### Where it's slowed the most\n\n- Pre-revenue consumer startups\n- Companies without a clear near-term path to defensibility\n\n## What founders are adjusting\n\nFounders raising this year are reporting longer diligence periods and more emphasis on unit economics earlier in the company's life than in the previous cycle, when growth metrics alone could carry a round.\n"}, {"slug": "reading-the-yield-curve-again", "title": "Reading the Yield Curve Again: What Changed", "excerpt": "A brief inversion, a quick recovery, and a market trying to figure out what it means this time.", "author": "James Okafor", "date": "2026-07-21T10:00:00Z", "tags": ["finance", "markets"], "wordCount": 1090, "category": "finance", "content": "# Reading the Yield Curve Again: What Changed\n\nA brief inversion, a quick recovery, and a market trying to figure out what it means this time.\n\n## The move itself\n\nShort-term yields briefly climbed above long-term yields for the first time in several quarters, before reverting within a matter of weeks \u2014 fast enough that some analysts questioned whether it should count as a genuine signal at all.\n\n## Why this inversion looked different\n\nHistorically, inversions have preceded slowdowns by several quarters. This one coincided with a temporary liquidity squeeze rather than a shift in growth expectations, which is the main reason many economists are hesitant to read it the same way.\n\n## The competing views\n\n> Some analysts see a false alarm caused by a technical funding issue. Others see an early tremor that the technical explanation is obscuring.\n\nBoth camps agree on one thing: the curve's shape matters less on its own than it does paired with credit spreads and labor data, and neither of those has moved enough yet to settle the argument.\n"}], "ml": [{"slug": "sparse-mixture-of-experts-explained", "title": "Sparse Mixture-of-Experts, Explained Without the Hand-Waving", "excerpt": "Why routing tokens to a handful of experts instead of one dense network changes the economics of training at scale.", "author": "Priya Raman", "date": "2026-07-28T09:00:00Z", "tags": ["ml", "hardware"], "wordCount": 1180, "category": "ml", "content": "# Sparse Mixture-of-Experts, Explained Without the Hand-Waving\n\nEvery large model has the same fundamental tension: more parameters generally mean more capability, but every parameter you add also costs compute on every single forward pass. Sparse mixture-of-experts (MoE) architectures exist to break that link.\n\n## The core idea\n\nInstead of routing every token through one dense stack of layers, an MoE layer keeps a bank of smaller \"expert\" networks and a lightweight router that picks a handful of them \u2014 often just two \u2014 for each token. The rest of the experts sit idle for that token.\n\nThis means a model can have, say, sixteen experts and a total parameter count several times larger than a comparable dense model, while the *active* parameter count per token stays close to the dense baseline. You get more capacity without paying for it on every pass.\n\n> The trick isn't adding parameters. It's adding parameters you don't have to use all the time.\n\n## Why routing is the hard part\n\nThe router itself is a small classifier, but getting it to behave well is most of the engineering effort in an MoE system:\n\n- **Load balancing.** Without a balancing term in the loss, routers tend to collapse onto a handful of favorite experts, wasting the rest of the capacity.\n- **Training stability.** Discrete routing decisions don't have clean gradients, so most implementations use auxiliary losses or noise injection to keep training smooth.\n- **Communication overhead.** In distributed training, tokens routed to an expert on a different device have to physically travel there, which is where a lot of the real-world slowdown comes from.\n\n### A quick mental model\n\n```\ntoken \u2192 router \u2192 top-k experts \u2192 weighted combine \u2192 next layer\n```\n\nThe router outputs a probability distribution over experts; the top-k are activated, their outputs are combined by that probability weighting, and everything else in the layer proceeds like normal.\n\n## What this changes in practice\n\nTraining and serving teams end up optimizing for different things once MoE enters the picture. Training cares about total parameter count and communication cost. Serving cares about active parameter count and memory footprint, since every expert still has to be loaded somewhere even if it's not used on a given token.\n\nThat mismatch is why MoE adoption tracks infrastructure maturity as much as it tracks research interest \u2014 the architecture is only a good trade if your systems stack can actually exploit the sparsity.\n\n## Where it's heading\n\nExpect routing granularity to keep increasing \u2014 smaller, more numerous experts rather than fewer, larger ones \u2014 and expect more work on routers that specialize by *task* rather than by token statistics alone. The economics are good enough that this isn't going away; the open questions are mostly about how far the specialization can go before coordination costs eat the gains.\n"}, {"slug": "the-data-quality-bottleneck", "title": "The Data-Quality Bottleneck Nobody Wants to Own", "excerpt": "Compute keeps getting cheaper. Clean, well-labeled data doesn't. A look at where the real bottleneck moved.", "author": "Marcus Idowu", "date": "2026-07-26T14:30:00Z", "tags": ["ml"], "wordCount": 940, "category": "ml", "content": "# The Data-Quality Bottleneck Nobody Wants to Own\n\nCompute keeps getting cheaper, model architectures keep converging on a handful of proven recipes, and the internet keeps growing. So why do so many teams say their biggest blocker is still data?\n\n## It's not about volume anymore\n\nMost organizations have more raw data than they know what to do with. The bottleneck isn't availability \u2014 it's trustworthiness. Duplicate records, inconsistent labeling schemes, and silent schema drift all quietly degrade a training set long before anyone notices in the metrics.\n\n## Three places quality quietly breaks\n\n### 1. Labeling drift\n\nWhen a labeling task runs for months, guidelines get reinterpreted, annotators rotate, and edge cases get handled differently over time \u2014 even with a fixed rubric.\n\n### 2. Deduplication gaps\n\nNear-duplicate documents inflate the effective weight of whatever they describe, which can bias a model toward overrepresented topics without anyone deciding that on purpose.\n\n### 3. Feedback loop contamination\n\nOnce a model's outputs start feeding back into future training data \u2014 through user interactions, synthetic augmentation, or scraped content \u2014 quality issues can compound in ways that are hard to trace after the fact.\n\n## What good practice looks like\n\nTeams that get this right tend to treat data pipelines with the same rigor as production code: version control, automated validation checks, and clear ownership for each stage. It's less glamorous than a new architecture, but it's usually the higher-leverage investment.\n"}, {"slug": "evaluating-models-beyond-benchmarks", "title": "Evaluating Models Beyond the Benchmark Leaderboard", "excerpt": "Benchmark scores are getting easier to game and harder to trust. What teams are measuring instead.", "author": "Sofia Delgado", "date": "2026-07-22T11:15:00Z", "tags": ["ml", "ai"], "wordCount": 1050, "category": "ml", "content": "# Evaluating Models Beyond the Benchmark Leaderboard\n\nBenchmark scores used to be a reasonable proxy for capability. As models get better at the specific format of popular benchmarks, that proxy is getting noisier.\n\n## The leaderboard problem\n\nPublic benchmarks are, by definition, public. Once a benchmark is popular enough to matter, its questions and answer patterns start leaking into training data \u2014 directly or indirectly \u2014 which inflates scores without a matching gain in real-world capability.\n\n## What teams are measuring instead\n\n- **Task-specific held-out evals** built from an organization's own workflows, refreshed regularly so they can't be memorized.\n- **Human preference studies** on real outputs, not just multiple-choice accuracy.\n- **Behavioral consistency checks** \u2014 does the model give the same answer to the same question asked two different ways?\n- **Failure-mode audits** that specifically hunt for the ways a model breaks, rather than averaging over cases where it doesn't.\n\n## A more honest scorecard\n\n> A single leaderboard number answers one question. A good evaluation suite answers ten, and admits which ones it can't answer at all.\n\nThe shift underway isn't about abandoning benchmarks \u2014 they're still useful for catching regressions quickly. It's about no longer treating a leaderboard rank as the whole story.\n"}], "politics": [{"slug": "committee-advances-data-privacy-bill", "title": "Committee Advances Data-Privacy Bill After Late Revisions", "excerpt": "A narrower version of the bill cleared committee this week, trading scope for votes.", "author": "James Okafor", "date": "2026-07-30T16:00:00Z", "tags": ["politics", "policy", "law"], "wordCount": 890, "category": "politics", "content": "# Committee Advances Data-Privacy Bill After Late Revisions\n\nA narrower version of the data-privacy bill cleared committee this week, after several late amendments traded scope for votes.\n\n## What changed in committee\n\nThe revised text drops a provision that would have applied to companies below a certain revenue threshold, narrowing the bill's reach to larger data processors. Sponsors say the change was necessary to secure enough votes to advance.\n\n### Key provisions that survived\n\n- Mandatory breach disclosure within a fixed reporting window\n- A private right of action for a defined set of violations\n- New requirements around data minimization for sensitive categories\n\n## What was cut\n\nAn earlier draft's algorithmic-transparency requirements were removed entirely, with opponents arguing they were too broad to implement without further technical guidance.\n\n## What happens next\n\nThe bill now heads to a floor vote, where its narrower scope is expected to draw a mixed reaction from advocacy groups who backed the original, broader version.\n"}, {"slug": "regional-elections-what-to-watch", "title": "Regional Elections: What to Watch Heading Into Fall", "excerpt": "Turnout models, key districts, and the issues most likely to decide close races.", "author": "Elena Marsh", "date": "2026-07-24T09:30:00Z", "tags": ["politics", "elections"], "wordCount": 1140, "category": "politics", "content": "# Regional Elections: What to Watch Heading Into Fall\n\nWith regional elections approaching, a handful of districts and issues look likely to decide the closest races.\n\n## The districts to watch\n\nRedistricting since the last cycle has created several genuinely competitive seats where turnout, rather than persuasion, is expected to decide the outcome.\n\n## The issues driving turnout\n\n- Cost-of-living concerns remain the top-ranked issue across most polling\n- Local infrastructure spending is a close second in suburban districts\n- Education policy is polling higher than in the last cycle, particularly among younger voters\n\n## Reading the polls carefully\n\n> Polling averages are useful for spotting trends, not for calling close races. In races decided by a point or two, methodology differences matter more than the headline number.\n\nAnalysts are cautioning against over-reading any single poll this cycle, given the unusually wide variance between pollsters on turnout modeling assumptions.\n"}, {"slug": "trade-policy-shift-supply-chains", "title": "A Quiet Trade-Policy Shift Is Reshaping Supply Chains", "excerpt": "New tariff schedules are pushing manufacturers to requalify suppliers months ahead of the deadline.", "author": "Marcus Idowu", "date": "2026-07-17T12:00:00Z", "tags": ["politics", "trade", "economy"], "wordCount": 1020, "category": "politics", "content": "# A Quiet Trade-Policy Shift Is Reshaping Supply Chains\n\nNew tariff schedules taking effect later this year are already pushing manufacturers to requalify suppliers months ahead of the deadline.\n\n## The policy change\n\nThe revised schedule raises duties on a specific set of intermediate goods, while leaving finished-goods tariffs largely unchanged \u2014 a structure that specifically incentivizes moving assembly steps rather than final production.\n\n## How manufacturers are responding\n\n- Requalifying alternate suppliers in unaffected trade zones\n- Rebuilding cost models around the new intermediate-goods rates\n- Accelerating supplier audits that had been scheduled for next year\n\n## The broader effect\n\nAnalysts expect the shift to accelerate a trend already underway: supply chains reorganizing around trade-zone boundaries rather than pure cost efficiency, a pattern that's become more common with each policy cycle.\n"}]};
+/* ---- BlogBoard single-file preview app ---- */
+
+(function initTheme() {
+  document.documentElement.setAttribute("data-theme", localStorage.getItem("bb_theme_preview") || "dark");
+})();
+
+const ALL_ARTICLES = Object.keys(ARTICLES_DATA).flatMap((cat) =>
+  ARTICLES_DATA[cat].map((a) => ({ ...a }))
+).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+const MOCK_BREAKING = [
+  { title: "Global chip shortage eases as new fabs come online", category: "hardware" },
+  { title: "Central bank holds rates steady, signals cautious outlook", category: "finance" },
+  { title: "Open-weight model release narrows gap with closed frontier labs", category: "ai" },
+  { title: "Coastal cities accelerate flood-defense spending ahead of storm season", category: "climate" },
+  { title: "Regulators open inquiry into cloud-provider pricing practices", category: "policy" },
+  { title: "Ransomware group claims breach of regional logistics network", category: "cybersecurity" }
+];
+const MOCK_TRENDING = [
+  { title: "Why open-weight models are catching up faster than expected", views: "18.2k" },
+  { title: "Inside the fab: what a shortage actually fixes", views: "14.7k" },
+  { title: "The quiet return of nuclear as a climate strategy", views: "12.1k" },
+  { title: "A field guide to the current ransomware landscape", views: "9.8k" },
+  { title: "Why VC checks got smaller this cycle", views: "8.4k" }
+];
+const MOCK_QUEUE = [
+  { title: "Fusion Startups Report Second Consecutive Funding Record", seo: 92, status: "review" },
+  { title: "What the Latest Jobs Report Really Says About the Labor Market", seo: 87, status: "approved" },
+  { title: "A Beginner's Map of the Current LLM Landscape", seo: 78, status: "review" },
+  { title: "Draft: Regional Grid Operators Brace for Peak Demand", seo: 64, status: "draft" },
+  { title: "Draft: Inside a Modern Phishing-as-a-Service Kit", seo: 71, status: "draft" },
+  { title: "Central Banks Compare Notes on Digital Currency Pilots", seo: 90, status: "approved" }
+];
+
+function getCategory(slug) { return CATEGORY_REGISTRY.find((c) => c.slug === slug) || null; }
+function getCategoriesByGroup() {
+  const groups = {};
+  CATEGORY_REGISTRY.forEach((c) => { (groups[c.group] = groups[c.group] || []).push(c); });
+  return groups;
+}
+function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str || ""; return d.innerHTML; }
+function estimateReadTime(wc) { return Math.max(1, Math.round((wc || 900) / 220)); }
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${Math.max(mins, 1)}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+function formatDate(dateStr) { return new Date(dateStr).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }); }
+function slugify(t) { return t.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); }
+
+function navigate(hash) { window.location.hash = hash; }
+
+document.addEventListener("DOMContentLoaded", () => {
+  initThemeToggle();
+  initClock();
+  initMobileNav();
+  initTicker();
+  initSearch();
+  initHeaderScrollState();
+  document.body.addEventListener("click", (e) => {
+    const link = e.target.closest("[data-route]");
+    if (!link) return;
+    e.preventDefault();
+    navigate(link.getAttribute("data-route"));
+  });
+  window.addEventListener("hashchange", render);
+  render();
+});
+
+function render() {
+  const hash = window.location.hash.replace(/^#\/?/, "");
+  const parts = hash.split("/").filter(Boolean);
+  const root = document.getElementById("view-root");
+  updateActiveNav(parts[0] || "dashboard");
+  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+
+  if (parts[0] === "category" && parts[1]) return renderCategoryView(root, parts[1]);
+  if (parts[0] === "post" && parts[1] && parts[2]) return renderPostView(root, parts[1], parts[2]);
+  if (parts[0] === "admin") return renderAdminView(root);
+  return renderDashboardView(root);
+}
+
+function updateActiveNav(routeKey) {
+  document.querySelectorAll("[data-nav-link]").forEach((el) => {
+    el.classList.toggle("is-active", el.getAttribute("data-nav-link") === routeKey);
+  });
+}
+
+/* ---------------- Dashboard ---------------- */
+function renderDashboardView(root) {
+  const groups = getCategoriesByGroup();
+  const groupOrder = ["Tech & Science", "Markets & Finance", "Politics & World", "Culture & Society"];
+  const top = ALL_ARTICLES.slice(0, 5);
+  let feedHtml = renderTopNewsSection(top);
+  groupOrder.forEach((groupName) => {
+    const slugs = (groups[groupName] || []).map((c) => c.slug);
+    const arts = ALL_ARTICLES.filter((a) => slugs.includes(a.category)).slice(0, 6);
+    if (arts.length) feedHtml += renderSection(groupName, arts);
+  });
+
+  root.innerHTML = `
+    <div class="container page-hero">
+      <div class="eyebrow">Mega-Dashboard</div>
+      <h1 class="page-title serif">Today's signal, sorted by what actually moved.</h1>
+      <p class="page-sub">Tech, markets, politics and culture — pulled live, ranked by relevance, updated as it happens.</p>
+    </div>
+    <div class="container dashboard-layout">
+      <main>${feedHtml}</main>
+      <aside class="sidebar">
+        <div class="widget">
+          <div class="widget-title">Trending Now</div>
+          <div>${renderTrending()}</div>
+        </div>
+        <div class="widget">
+          <div class="widget-title">Explore Categories</div>
+          <div class="tag-cloud">${renderExploreChips()}</div>
+        </div>
+      </aside>
+    </div>`;
+}
+
+function renderTopNewsSection(articles) {
+  if (!articles.length) return "";
+  const [featured, ...rest] = articles;
+  const cards = [renderCard(featured, true), ...rest.slice(0, 4).map((a) => renderCard(a, false))].join("");
+  return `<section class="feed-section">
+    <div class="feed-section-head"><h2 class="feed-section-title"><span class="swatch" style="background:var(--accent-primary)"></span>Top News</h2></div>
+    <div class="feed-grid feed-grid--featured">${cards}</div></section>`;
+}
+function renderSection(groupName, articles) {
+  const firstCat = getCategory(articles[0].category);
+  const cards = articles.map((a) => renderCard(a, false)).join("");
+  return `<section class="feed-section">
+    <div class="feed-section-head">
+      <h2 class="feed-section-title"><span class="swatch" style="background:${firstCat?.color || "var(--accent-primary)"}"></span>${groupName}</h2>
+      <a class="feed-section-link" data-route="category/${articles[0].category}" href="#">View all →</a>
+    </div>
+    <div class="feed-grid">${cards}</div></section>`;
+}
+function renderCard(article, featured) {
+  const cat = getCategory(article.category);
+  const readTime = estimateReadTime(article.wordCount);
+  return `<a class="card ${featured ? "card--featured" : ""}" data-route="post/${article.category}/${article.slug}" href="#">
+    <div class="card-media" style="background:linear-gradient(135deg, ${cat?.color || "#333"}33, transparent)">
+      <span class="card-tag" style="background:${cat?.color || "#7C5CFC"}">${cat?.icon || ""} ${cat?.label || article.category}</span>
+    </div>
+    <div class="card-body">
+      <h3 class="card-title">${escapeHtml(article.title)}</h3>
+      <p class="card-excerpt">${escapeHtml(article.excerpt || "")}</p>
+      <div class="card-meta">
+        <span>${escapeHtml(article.author || "BlogBoard Staff")}</span><span class="dot"></span>
+        <span>${timeAgo(article.date)}</span><span class="dot"></span><span>${readTime} min read</span>
+      </div>
+    </div></a>`;
+}
+function renderTrending() {
+  return MOCK_TRENDING.map((item, i) => `
+    <div class="trending-item">
+      <span class="trending-rank">${String(i + 1).padStart(2, "0")}</span>
+      <div class="trending-body">
+        <div class="trending-title">${escapeHtml(item.title)}</div>
+        <div class="trending-views">${item.views} reads</div>
+      </div>
+    </div>`).join("");
+}
+function renderExploreChips() {
+  return CATEGORY_REGISTRY.map((cat) => `
+    <a class="tag-chip" data-route="category/${cat.slug}" href="#" style="border-color:${cat.color}55">
+      <span class="swatch" style="background:${cat.color}"></span>${cat.label}
+    </a>`).join("");
+}
+
+/* ---------------- Category ---------------- */
+function renderCategoryView(root, slug) {
+  const cat = getCategory(slug);
+  if (!cat) {
+    root.innerHTML = `<div class="container"><div class="empty-state"><div class="empty-state-icon">◈</div><h3>Category not found</h3></div></div>`;
+    return;
+  }
+  const articles = ALL_ARTICLES.filter((a) => a.category === slug);
+  const grid = articles.length
+    ? articles.map((a) => renderCard(a, false)).join("")
+    : `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">${cat.icon}</div><h3>No articles here yet</h3><p>Check back soon.</p></div>`;
+
+  root.innerHTML = `
+    <div class="container">
+      <div class="category-header">
+        <div class="category-icon" style="background:${cat.color}22;color:${cat.color}">${cat.icon}</div>
+        <div>
+          <div class="eyebrow" style="color:${cat.color}">${cat.group}</div>
+          <h1 class="page-title serif" style="font-size:32px">${cat.label}</h1>
+          <p class="page-sub">${cat.description}</p>
+        </div>
+      </div>
+      <div class="category-grid">${grid}</div>
+    </div>`;
+}
+
+/* ---------------- Post ---------------- */
+function renderPostView(root, catSlug, slug) {
+  const article = ALL_ARTICLES.find((a) => a.category === catSlug && a.slug === slug);
+  if (!article) {
+    root.innerHTML = `<div class="container"><div class="empty-state"><div class="empty-state-icon">◈</div><h3>Article not found</h3><p style="margin-top:16px"><a class="btn btn-primary" data-route="" href="#">Back to dashboard</a></p></div></div>`;
+    return;
+  }
+  const cat = getCategory(article.category);
+  const readTime = estimateReadTime(article.wordCount);
+  const html = marked.parse(article.content || "");
+
+  root.innerHTML = `
+    <div class="reading-progress" id="reading-progress"></div>
+    <main class="container">
+      <div style="padding-top:28px">
+        <nav class="breadcrumbs">
+          <a data-route="" href="#">Home</a><span>›</span>
+          <a data-route="category/${article.category}" href="#">${cat?.label || article.category}</a><span>›</span>
+          <span>${escapeHtml(article.title)}</span>
+        </nav>
+      </div>
+      <div class="article-layout">
+        <div>
+          <header class="article-header">
+            <h1 class="article-title serif">${escapeHtml(article.title)}</h1>
+            <div class="article-meta">
+              <span>${escapeHtml(article.author || "BlogBoard Staff")}</span><span class="dot"></span>
+              <span>${formatDate(article.date)}</span><span class="dot"></span><span>${readTime} min read</span>
+            </div>
+            <div class="article-tags">${(article.tags || [article.category]).map((s) => {
+              const c = getCategory(s);
+              return `<a class="tag-chip" data-route="category/${s}" href="#" style="border-color:${c?.color || "#7C5CFC"}55"><span class="swatch" style="background:${c?.color || "#7C5CFC"}"></span>${c?.label || s}</a>`;
+            }).join("")}</div>
+          </header>
+          <article class="article-content" id="article-content">${html}</article>
+        </div>
+        <aside class="toc" id="toc-wrap">
+          <div class="toc-title">On this page</div>
+          <nav class="toc-list" id="toc-list"></nav>
+        </aside>
+      </div>
+    </main>`;
+
+  const contentEl = document.getElementById("article-content");
+  if (window.hljs) contentEl.querySelectorAll("pre code").forEach((b) => hljs.highlightElement(b));
+  buildTOC(contentEl);
+  initReadingProgress();
+}
+
+function buildTOC(contentEl) {
+  const tocList = document.getElementById("toc-list");
+  const tocWrap = document.getElementById("toc-wrap");
+  const headings = contentEl.querySelectorAll("h2, h3");
+  if (!headings.length) { if (tocWrap) tocWrap.style.display = "none"; return; }
+  const links = [];
+  headings.forEach((h, i) => {
+    const id = `section-${i}-${slugify(h.textContent)}`;
+    h.id = id;
+    const a = document.createElement("a");
+    a.href = `#${id}`;
+    a.className = `toc-link${h.tagName === "H3" ? " is-h3" : ""}`;
+    a.textContent = h.textContent;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById(id).scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    tocList.appendChild(a);
+    links.push({ id, el: a });
+  });
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const link = links.find((l) => l.id === entry.target.id);
+      if (link && entry.isIntersecting) { links.forEach((l) => l.el.classList.remove("is-active")); link.el.classList.add("is-active"); }
+    });
+  }, { rootMargin: "-100px 0px -70% 0px" });
+  headings.forEach((h) => observer.observe(h));
+}
+function initReadingProgress() {
+  const bar = document.getElementById("reading-progress");
+  if (!bar) return;
+  const onScroll = () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = `${docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0}%`;
+  };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+}
+
+/* ---------------- Admin ---------------- */
+function renderAdminView(root) {
+  root.innerHTML = `
+    <div class="admin-overlay" id="admin-login" style="${sessionStorage.getItem("bb_admin_authed_preview") === "true" ? "display:none" : ""}">
+      <div class="admin-login-card">
+        <div class="logo"><span class="logo-mark">◈</span>Blog<span class="logo-board">Board</span></div>
+        <p>Admin dashboard access</p>
+        <form id="login-form">
+          <div class="field">
+            <label for="admin-password">Password</label>
+            <input type="password" id="admin-password" placeholder="Enter admin password" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Unlock dashboard</button>
+          <div class="field-error" id="login-error"></div>
+          <div class="field-hint">Demo credential: admin123</div>
+        </form>
+      </div>
+    </div>
+    <div class="container admin-shell ${sessionStorage.getItem("bb_admin_authed_preview") === "true" ? "is-active" : ""}" id="admin-shell">
+      <div class="page-hero" style="padding:36px 0 0">
+        <div class="eyebrow">CMS Dashboard</div>
+        <h1 class="page-title serif" style="font-size:30px">Content operations</h1>
+        <p class="page-sub">Review AI-generated drafts, tune your news sources, and keep an eye on performance.</p>
+      </div>
+      <nav class="admin-tabs">
+        <button class="admin-tab is-active" data-tab="queue">AI Articles Queue</button>
+        <button class="admin-tab" data-tab="settings">Settings</button>
+        <button class="admin-tab" data-tab="performance">Performance</button>
+      </nav>
+      <section class="admin-panel is-active" data-panel="queue">
+        <table class="data-table"><thead><tr><th>Title</th><th>SEO Score</th><th>Status</th></tr></thead>
+          <tbody>${MOCK_QUEUE.map((i) => `<tr><td>${escapeHtml(i.title)}</td><td class="mono">${i.seo}</td><td><span class="status-pill status-pill--${i.status}">${i.status}</span></td></tr>`).join("")}</tbody>
+        </table>
+      </section>
+      <section class="admin-panel" data-panel="settings">
+        <div class="widget" style="max-width:520px">
+          <div class="widget-title">News API Provider</div>
+          <form class="settings-form" onsubmit="return false">
+            <div class="field"><label for="provider-select">Provider</label>
+              <select id="provider-select"><option value="gnews">GNews.io</option><option value="newsapi">NewsAPI.org</option></select>
+            </div>
+            <div class="field"><label for="api-key">API Key</label>
+              <input type="password" id="api-key" placeholder="Paste your API key" />
+              <div class="field-hint">Stored locally in this browser only. Leave blank to keep running on mock data.</div>
+            </div>
+            <button type="button" class="btn btn-primary" id="settings-save" style="align-self:flex-start;margin-top:6px">Save settings</button>
+            <div class="save-confirm" id="settings-confirm"></div>
+          </form>
+        </div>
+      </section>
+      <section class="admin-panel" data-panel="performance">
+        <div class="stat-grid">
+          ${[["Total Views (30d)", "482.6k", "+12.4% vs prior period"], ["Avg SEO Score", "84", "+3 pts vs prior period"], ["Published Today", "7", "3 pending review"]]
+            .map(([l, v, d]) => `<div class="stat-card"><div class="stat-label">${l}</div><div class="stat-value mono">${v}</div><div class="stat-delta">${d}</div></div>`).join("")}
+        </div>
+      </section>
+    </div>`;
+
+  document.getElementById("login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const val = document.getElementById("admin-password").value;
+    if (val === "admin123") {
+      sessionStorage.setItem("bb_admin_authed_preview", "true");
+      document.getElementById("admin-login").style.display = "none";
+      document.getElementById("admin-shell").classList.add("is-active");
+    } else {
+      document.getElementById("login-error").textContent = "Incorrect password. Try again.";
+    }
+  });
+  document.querySelectorAll(".admin-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".admin-tab").forEach((t) => t.classList.remove("is-active"));
+      document.querySelectorAll(".admin-panel").forEach((p) => p.classList.remove("is-active"));
+      tab.classList.add("is-active");
+      document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add("is-active");
+    });
+  });
+  document.getElementById("settings-save").addEventListener("click", () => {
+    const confirmEl = document.getElementById("settings-confirm");
+    confirmEl.textContent = "Settings saved.";
+    confirmEl.classList.add("is-visible");
+    setTimeout(() => confirmEl.classList.remove("is-visible"), 2200);
+  });
+}
+
+/* ---------------- Shared chrome: nav / ticker / search / theme / clock ---------------- */
+function initThemeToggle() {
+  const toggle = document.querySelector("[data-theme-toggle]");
+  const sync = () => toggle.setAttribute("aria-checked", String(document.documentElement.getAttribute("data-theme") === "dark"));
+  sync();
+  toggle.addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("bb_theme_preview", next);
+    sync();
+  });
+}
+function initClock() {
+  const el = document.querySelector("[data-clock]");
+  const tick = () => {
+    const now = new Date();
+    el.textContent = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+  };
+  tick(); setInterval(tick, 1000);
+}
+function initMobileNav() {
+  const btn = document.querySelector("[data-nav-toggle]");
+  const menu = document.querySelector("[data-nav-menu]");
+  btn.addEventListener("click", () => {
+    const open = menu.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded", String(open));
+  });
+  menu.addEventListener("click", (e) => { if (e.target.closest("[data-route]")) menu.classList.remove("is-open"); });
+}
+function initHeaderScrollState() {
+  const header = document.querySelector("[data-navbar]");
+  const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
+  onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+}
+function initTicker() {
+  const track = document.querySelector("[data-ticker-track]");
+  const html = MOCK_BREAKING.map((item) => {
+    const cat = getCategory(item.category);
+    const dot = cat ? `<span class="ticker-dot" style="background:${cat.color}"></span>` : "";
+    return `<span class="ticker-item">${dot}${escapeHtml(item.title)}</span>`;
+  }).join("");
+  track.innerHTML = html + html;
+}
+let searchDebounce;
+function initSearch() {
+  const input = document.querySelector("[data-search-input]");
+  const results = document.querySelector("[data-search-results]");
+  input.addEventListener("input", () => {
+    clearTimeout(searchDebounce);
+    const q = input.value.trim().toLowerCase();
+    if (!q) { results.classList.remove("is-open"); results.innerHTML = ""; return; }
+    searchDebounce = setTimeout(() => {
+      const matches = ALL_ARTICLES.filter((a) => a.title.toLowerCase().includes(q) || (a.excerpt || "").toLowerCase().includes(q)).slice(0, 6);
+      if (!matches.length) {
+        results.innerHTML = `<div class="search-empty">No results for "${escapeHtml(input.value)}"</div>`;
+      } else {
+        results.innerHTML = `<div class="search-group-label">Articles</div>` + matches.map((a) => {
+          const c = getCategory(a.category);
+          return `<a class="search-result" data-route="post/${a.category}/${a.slug}" href="#">
+            <span class="search-result-cat" style="color:${c?.color || "var(--accent-primary)"}">${c?.label || a.category}</span>
+            <span class="search-result-title">${escapeHtml(a.title)}</span></a>`;
+        }).join("");
+      }
+      results.classList.add("is-open");
+    }, 150);
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest("[data-search]")) results.classList.remove("is-open"); });
+  document.body.addEventListener("click", (e) => { if (e.target.closest("[data-route]") && e.target.closest("[data-search]")) { results.classList.remove("is-open"); input.value = ""; } });
+}
+
+</script>
+</body>
+</html>
