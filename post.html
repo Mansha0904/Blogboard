@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Article — BlogBoard</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+
+<div class="ambient-bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="reading-progress" data-reading-progress></div>
+
+<!-- Navbar -->
+<header class="navbar" data-navbar>
+  <div class="container navbar-inner">
+    <a class="logo" href="index.html">
+      <span class="logo-mark">◈</span>Blog<span class="logo-board">Board</span>
+    </a>
+    <nav class="nav-menu" data-nav-menu>
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <a class="nav-link" href="category.html#cat=ai">AI</a>
+      <a class="nav-link" href="category.html#cat=ml">ML</a>
+      <a class="nav-link" href="category.html#cat=finance">Finance</a>
+      <a class="nav-link" href="category.html#cat=politics">Politics</a>
+      <a class="nav-link" href="category.html#cat=cybersecurity">Cybersecurity</a>
+      <a class="nav-link" href="category.html#cat=climate">Climate</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn" href="admin.html"><span class="btn-login-label">Login</span></a>
+      <button class="nav-toggle" data-nav-toggle aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-label"><span class="pulse"></span>Breaking</div>
+  <div class="ticker-viewport">
+    <div class="ticker-track" data-ticker-track><span class="ticker-item">Loading live headlines…</span></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="search-wrap" data-search>
+      <div class="search-input-row">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Search articles and live news…" data-search-input aria-label="Search" />
+      </div>
+      <div class="search-results" data-search-results></div>
+    </div>
+    <div class="topbar-right">
+      <span class="clock mono" data-clock>--:--:--</span>
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme" role="switch" aria-checked="true"></button>
+    </div>
+  </div>
+</div>
+
+<main class="container" data-article-main>
+  <div style="padding-top:28px">
+    <nav class="breadcrumbs" data-breadcrumbs></nav>
+  </div>
+
+  <div class="article-layout">
+    <div>
+      <header class="article-header">
+        <h1 class="article-title serif" data-article-title>Loading article…</h1>
+        <div class="article-meta" data-article-meta></div>
+        <div class="article-tags" data-article-tags></div>
+      </header>
+      <article class="article-content" data-article-content>
+        <div class="skeleton" style="height:22px;width:90%;margin-bottom:12px"></div>
+        <div class="skeleton" style="height:22px;width:75%;margin-bottom:12px"></div>
+        <div class="skeleton" style="height:22px;width:82%;margin-bottom:12px"></div>
+      </article>
+    </div>
+
+    <aside class="toc" data-toc>
+      <div class="toc-title">On this page</div>
+      <nav class="toc-list" data-toc-list></nav>
+    </aside>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container site-footer-inner">
+    <span class="footer-text">© 2026 BlogBoard. Built for readers who skim less and know more.</span>
+    <span class="footer-text mono">v1.0.0</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/blogs-data.js"></script>
+<script src="js/news-api.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/post.js"></script>
+</body>
+</html>

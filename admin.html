@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — BlogBoard</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="ambient-bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<header class="navbar" data-navbar>
+  <div class="container navbar-inner">
+    <a class="logo" href="index.html">
+      <span class="logo-mark">◈</span>Blog<span class="logo-board">Board</span>
+    </a>
+    <nav class="nav-menu" data-nav-menu>
+      <a class="nav-link" href="index.html">Dashboard</a>
+      <span class="nav-link is-active">Admin</span>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn" href="index.html">Back to site</a>
+      <button class="nav-toggle" data-nav-toggle aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Login overlay -->
+<div class="admin-overlay" data-admin-login>
+  <div class="admin-login-card">
+    <div class="logo"><span class="logo-mark">◈</span>Blog<span class="logo-board">Board</span></div>
+    <p>Admin dashboard access</p>
+    <form data-login-form>
+      <div class="field">
+        <label for="admin-password">Password</label>
+        <input type="password" id="admin-password" data-login-password placeholder="Enter admin password" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Unlock dashboard</button>
+      <div class="field-error" data-login-error></div>
+      <div class="field-hint">Demo credential: admin123</div>
+    </form>
+  </div>
+</div>
+
+<!-- Admin shell -->
+<div class="container admin-shell" data-admin-shell>
+  <div class="page-hero" style="padding:36px 0 0">
+    <div class="eyebrow">CMS Dashboard</div>
+    <h1 class="page-title serif" style="font-size:30px">Content operations</h1>
+    <p class="page-sub">Review AI-generated drafts, tune your news sources, and keep an eye on performance.</p>
+  </div>
+
+  <nav class="admin-tabs">
+    <button class="admin-tab is-active" data-admin-tab="queue">AI Articles Queue</button>
+    <button class="admin-tab" data-admin-tab="settings">Settings</button>
+    <button class="admin-tab" data-admin-tab="performance">Performance</button>
+  </nav>
+
+  <section class="admin-panel is-active" data-admin-panel="queue">
+    <table class="data-table">
+      <thead>
+        <tr><th>Title</th><th>SEO Score</th><th>Status</th></tr>
+      </thead>
+      <tbody data-queue-body></tbody>
+    </table>
+  </section>
+
+  <section class="admin-panel" data-admin-panel="settings">
+    <div class="widget" style="max-width:520px">
+      <div class="widget-title">News API Provider</div>
+      <form class="settings-form" onsubmit="return false">
+        <div class="field">
+          <label for="provider-select">Provider</label>
+          <select id="provider-select" data-settings-provider>
+            <option value="gnews">GNews.io</option>
+            <option value="newsapi">NewsAPI.org</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="api-key">API Key</label>
+          <input type="password" id="api-key" data-settings-key placeholder="Paste your API key" autocomplete="off" />
+          <div class="field-hint">Stored locally in this browser only. Leave blank to keep running on mock data.</div>
+        </div>
+        <button type="button" class="btn btn-primary" data-settings-save style="align-self:flex-start;margin-top:6px">Save settings</button>
+        <div class="save-confirm" data-settings-confirm></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="admin-panel" data-admin-panel="performance">
+    <div class="stat-grid" data-performance-grid></div>
+  </section>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/blogs-data.js"></script>
+<script src="js/news-api.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
